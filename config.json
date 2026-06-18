@@ -1,0 +1,18 @@
+{
+    "api_id": "API",
+    "api_hash": "API_hash",
+    "channels": [
+        "@Radar_Moscow_99",
+        "@hdjskwjwhkqhsudgdjw"
+    ],
+    "sound_enabled": true,
+    "sound_file": "file_example_WAV_1MG.wav",
+    "proxy_enabled": true,
+    "proxy_ip": "IP",
+    "proxy_port": 443,
+    "proxy_secret": "Sekret",
+    "dm_users": [
+        "@pipinart"
+    ],
+    "dm_message": "внимание  https://t.me/hdjskwjwhkqhsudgdjw alarm"
+}
