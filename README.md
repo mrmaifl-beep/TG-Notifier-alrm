@@ -167,7 +167,7 @@ python3 main.py
     "api_hash": "fedcba9876543210fedcba9876543210",
     "channels": [
         "@Radar_Moscow_99",   // российский радарный фид
-        "@UA_Air_Alarms",     // официальные украинские тревоги
+        "@radar_moscoww)",     // етревоги
         "@WarMonitor"         // OSINT‑канал
     ],
     "sound_enabled": true,
