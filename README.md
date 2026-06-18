@@ -1,116 +1,116 @@
-# 🚨 TG-Notifier‑alrm – Real‑Time Telegram Channel Alerts
+# 🚨 TG-Notifier‑alrm – Оповещения о БПЛА в реальном времени из Telegram‑каналов
 
-**Elevator Pitch**  
-TG‑Notifier‑alrm is a lightweight Python daemon that watches one or more Telegram channels and instantly plays a sound (or sends a DM) when a new message appears.  
-Designed for single‑board computers (Raspberry Pi, Orange Pi, etc.) it consumes **minimal CPU/RAM** and provides a tiny web‑panel for on‑the‑fly configuration.
+**Элеватор‑питч**  
+TG‑Notifier‑alrm – лёгкий Python‑демон, который отслеживает один или несколько Telegram‑каналов и мгновенно воспроизводит звук (или отправляет личное сообщение) при появлении нового поста.  
+Разработан для одноплатных компьютеров (Raspberry Pi, Orange Pi и т.п.), потребляет минимальные ресурсы и включает небольшую веб‑панель для оперативной настройки.
 
-> 🎯 *Perfect for monitoring critical alert channels (air‑raid, drone‑attack, weather, trading signals) where every second counts.*
-
----
-
-## 📑 Table of Contents
-1. [Features](#-features)  
-2. [System Requirements](#-system-requirements)  
-3. [Installation & First Run](#-installation--first-run)  
-   - [Storyboard: Installation & Launch](#storyboard-installation--launch)  
-4. [Configuration](#-configuration)  
-5. [Usage Examples](#-usage-examples)  
-6. [Code Walk‑through](#-code-walk-through)  
-7. [Resource Consumption Diagram](#-resource-consumption-diagram)  
-8. [Running as a Service (systemd / crontab)](#-running-as-a-service-systemd--crontab)  
-9. [Contributing](#-contributing)  
-10. [Acknowledgements](#-acknowledgements)  
+> 🎯 *Идеально подходит для мониторинга критически важных каналов (оповещения о воздушных атаках, погоде, торговых сигналах), где важна каждая секунда.*
 
 ---
 
-## ✨ Features
-- 📡 Real‑time Telegram channel monitoring (via Telethon)  
-- 🔊 Configurable sound playback (`aplay` on Linux, `winsound` on Windows)  
-- 💬 Optional Direct Message forwarding to specified users  
-- 🌐 Tiny web control panel (port 8080) – view status, change settings, upload new .wav sounds  
-- 🛡️ Proxy support (MTProto random intermediate)  
-- 📜 Persistent configuration in `config.json`  
-- 🪶 Designed for low‑power SBCs – < 5 % CPU, < 30 MB RAM on Raspberry Pi 4  
-- 🧩 Easy to extend – clear separation of Telegram listener, sound player, web server  
+## 📑 Содержание
+1. [Особенности](#-особенности)  
+2. [Требования к системе](#-требования-к-системе)  
+3. [Установка и первый запуск](#-установка-и-запуск)  
+   - [Сториборд: установка и запуск](#сториборд-установка-и-запуск)  
+4. [Настройка](#-настройка)  
+5. [Примеры использования](#-примеры-использования)  
+6. [Прогулка по коду](#-прогулка-пот-коду)  
+7. [Диаграмма потребления ресурсов](#-диаграмма-потребления-ресурсов)  
+8. [Запуск как службы (systemd / crontab)](#-запуск-как-службы-systemd--crontab)  
+9. [Вклад в проект](#-вклад-в-проект)  
+10. [Благодарности](#-благодарности)  
 
 ---
 
-## 🐧 System Requirements
-| Item | Minimum |
-|------|---------|
-| OS | Linux (Raspberry Pi OS, Ubuntu ARM, Debian) – also works on Windows/macOS |
+## ✨ Особенности
+- 📡 Мониторинг Telegram‑каналов в реальном времени (через Telethon)  
+- 🔊 Настраиваемое воспроизведение звука (`aplay` в Linux, `winsound` в Windows)  
+- 💬 Возможность отправки личных сообщений указанным пользователям  
+- 🌐 Веб‑панель управления (порт 8080) – статус, изменение настроек, загрузка новых звуков .wav  
+- 🛡️ Поддержка прокси (MTProto random intermediate)  
+- 📜 Сохранение конфигурации в `config.json`  
+- 🪶 Рассчитан на низкое энергопотребление SBC – < 5 % CPU, < 30 МБ RAM на Raspberry Pi 4  
+- 🧩 Легко расширяется – чёткое разделение Telegram‑слушателя, воспроизведения звука и веб‑сервера  
+
+---
+
+## 🐧 Требования к системе
+| Компонент | Минимум |
+|-----------|---------|
+| ОС | Linux (Raspberry Pi OS, Ubuntu ARM, Debian) – также работает на Windows/macOS |
 | Python | 3.8+ |
-| RAM | 50 MB (typical usage ~20 MB) |
-| Storage | 10 MB (code + dependencies) |
-| Packages | `telethon`, `aiohttp` |
-| Sound | Any `.wav` file (default: `notification.wav`) |
-| Network | Outbound HTTPS/MTProto to Telegram |
+| ОЗУ | 50 МБ (типовое потребление ~20 МБ) |
+| Диск | 10 МБ (код + зависимости) |
+| Пакеты | `telethon`, `aiohttp` |
+| Звук | Любой файл .wav (по умолчанию `notification.wav`) |
+| Сеть | Исходящий HTTPS/MTProto к Telegram |
 
 ---
 
-## 📦 Installation & First Run
+## 📦 Установка и первый запуск
 
-### Step‑by‑step
+### Пошаговая инструкция
 ```bash
-# 1️⃣ Clone the repository
+# 1️⃣ Клонируем репозиторий
 git clone https://github.com/mrmaifl-beep/TG-Notifier-alrm.git
 cd TG-Notifier-alrm
 
-# 2️⃣ (Optional but recommended) Create a virtual environment
+# 2️⃣ (Опционально, но рекомендуется) Создаём виртуальное окружение
 python3 -m venv venv
 source venv/bin/activate
 
-# 3️⃣ Install dependencies
+# 3️⃣ Устанавливаем зависимости
 pip install --upgrade pip
 pip install telethon aiohttp
 
-# 4️⃣ Copy the example config and fill in your values
-cp config.json.example config.json   # if you have an example; otherwise edit config.json directly
-nano config.json                     # <-- see Configuration section below
+# 4️⃣ Копируем пример конфигурации и заполняем свои данные
+# Если в репозитории есть config.json.example – копируем его, иначе правим существующий config.json
+cp config.json.example config.json   # если пример существует
+nano config.json                     # <-- см. раздел «Настройка»
 
-# 5️⃣ Place your alert sound file (WAV) in the folder, e.g. notification.wav
-#    (or keep the default filename referenced in config.json)
+# 5️⃣ Кладем файл звука (WAV) в папку, например notification.wav
+#    (или используем имя, указанное в config.json)
 
-# 6️⃣ Run the notifier
+# 6️⃣ Запускаем нотификатор
 python3 main.py
 ```
 
-### 🎞️ Storyboard: Installation & Launch
+### 🎞️ Сториборд: установка и запуск
 ```
 +-------------------+   +-------------------+   +-------------------+   +-------------------+
 |  git clone …      |   |  python3 -m venv  |   |  pip install …    |   |  python3 main.py    |
-|  (repo downloaded)|   |  (venv created)   |   |  (telethon, aiohttp) |   |  (starts Telegram) |
-|                   |   |                   |   |                   |   |  🔊 plays sound on |
-|                   |   |                   |   |                   |   |    new message      |
+|  (репо загружено) |   |  (venv создан)    |   |  (telethon, aiohttp) |   |  (запуск Telegram) |
+|                   |   |                   |   |                   |   |  🔊 воспроизводит |
+|                   |   |                   |   |                   |   |    звук при новом |
+|                   |   |                   |   |                   |   |    сообщении       |
 +-------------------+   +-------------------+   +-------------------+   +-------------------+
-   Step 1                  Step 2               Step 3                 Step 4
+   Шаг 1               Шаг 2                 Шаг 3                 Шаг 4
 ```
 
-> After the first run the script will create a session file `pi_session.session` for Telegram login.  
-> If 2‑FA is enabled on your Telegram account, you’ll be prompted for the code in the terminal.
+> После первого запуска скрипт создаст файл сессии `pi_session.session` для авторизации в Telegram. Если у вас включена двухфакторная аутентификация, в терминале потребуется ввести код.
 
 ---
 
-## ⚙️ Configuration
+## ⚙️ Настройка
 
-All settings live in **`config.json`** (JSON format).  
-Edit it with any text editor; changes are applied instantly via the web panel or after a restart.
+Все параметры находятся в файле **`config.json`** (формат JSON). Отредактируйте его любым текстовым редактором; изменения применяются мгновенно через веб‑панель или после перезапуска.
 
-| Key | Type | Description | Example |
-|-----|------|-------------|---------|
-| `api_id` | string / integer | Your Telegram API ID (my.telegram.org) | `1234567` |
-| `api_hash` | string | Telegram API hash | `abcdef1234567890abcdef1234567890` |
-| `channels` | array of strings | List of usernames (with `@`) to monitor. Case‑insensitive. | `["@Radar_Moscow_99", "@alerts"]` |
-| `sound_enabled` | boolean | Toggle sound playback | `true` |
-| `sound_file` | string | Filename of the `.wav` to play (must be in script dir) | `"alert.wav"` |
-| `proxy_enabled` | boolean | Use MTProto proxy | `false` |
-| `proxy_ip` | string | Proxy IP address | `"185.70.123.45"` |
-| `proxy_port` | integer | Proxy port (usually 443) | `443` |
-| `proxy_secret` | string | Proxy secret (hex) | `"dd0123456789abcdef"` |
-| `dm_users` | array of strings | Usernames (with `@`) to receive a DM when a trigger occurs | `["@admin", "@operator"]` |
-| `dm_message` | string | Text to send in the DM (can be empty) | `"⚠️ ALERT: New message in "` |
+| Ключ | Тип | Описание | Пример |
+|------|-----|----------|--------|
+| `api_id` | строка / число | Ваш Telegram API ID (my.telegram.org) | `1234567` |
+| `api_hash` | строка | Telegram API хеш | `abcdef1234567890abcdef1234567890` |
+| `channels` | массив строк | Список имён каналов (с `@`) для отслеживания. Регистронезависимо. | `["@Radar_Moscow_99", "@alerts"]` |
+| `sound_enabled` | boolean | Включить/выключить воспроизведение звука | `true` |
+| `sound_file` | string | Имя файла .wav, который будет воспроизводиться (должен находиться в той же папке) | `"alert.wav"` |
+| `proxy_enabled` | boolean | Использовать MTProto прокси | `false` |
+| `proxy_ip` | string | IP‑адрес прокси | `"185.70.123.45"` |
+| `proxy_port` | integer | Порт прокси (обычно 443) | `443` |
+| `proxy_secret` | string | Секрет прокси (hex) | `"dd0123456789abcdef"` |
+| `dm_users` | массив строк | Имена пользователей (с `@`), которым будет отправляться ЛС при срабатывании | `["@admin", "@operator"]` |
+| `dm_message` | string | Текст, который будет отправлен в ЛС (может быть пустым) | `"⚠️ ТРЕВОГА: новое сообщение в "` |
 
-### 📝 Example `config.json` for air‑raid monitoring
+### 📝 Пример `config.json` для мониторинга воздушной тревоги
 ```json
 {
     "api_id": 1234567,
@@ -123,16 +123,16 @@ Edit it with any text editor; changes are applied instantly via the web panel or
     "sound_file": "airraid.wav",
     "proxy_enabled": false,
     "dm_users": ["@mytelegram"],
-    "dm_message": "⚠️ Possible air raid! Check the channel."
+    "dm_message": "⚠️ Возможная воздушная тревога! Проверь канал."
 }
 ```
 
 ---
 
-## 🚀 Usage Examples
+## 🚀 Примеры использования
 
-### Example 1 – Single Channel
-Monitor one channel and play a default beep.
+### Пример 1 – Один канал
+Отслеживаем один канал и включаем стандартный звуковой сигнал.
 
 ```json
 {
@@ -146,29 +146,29 @@ Monitor one channel and play a default beep.
 }
 ```
 
-Run:
+Запуск:
 ```bash
 python3 main.py
 ```
 
-### Example 2 – Multiple Channels with Different Sounds
-You cannot assign different sounds per channel directly, but you can switch the sound file «on the fly» via the web panel.
+### Пример 2 – Несколько каналов с разными звуками
+Напрямуюassign разных звуков разным каналам нельзя, но вы можете менять звуковой файл «на лету» через веб‑панель.
 
-1. Upload `alert1.wav` and `alert2.wav` through the panel (`/api/upload`).  
-2. In the panel set `sound_file` to the desired file and save.  
-3. The change takes effect instantly – no restart needed.
+1. Загрузите через панель файлы `alert1.wav` и `alert2.wav` (`/api/upload`).  
+2. В веб‑панели установите нужное значение `sound_file` и сохраните.  
+3. Изменение вступает в силу немедленно – перезапуск не требуется.
 
-### Example 3 – Personal Use (Drone / Missile Alert)
-This is the exact setup the author uses for early‑warning of aerial threats.
+### Пример 3 – Личный сценарий (оповещения о БПЛА)
+Это именно та конфигурация, которую использует автор для раннего предупреждения о воздушных угрозах.
 
 ```json
 {
     "api_id": 9876543,
     "api_hash": "fedcba9876543210fedcba9876543210",
     "channels": [
-        "@Radar_Moscow_99",   // Russian radar feed
-        "@UA_Air_Alarms",     // Ukrainian official alerts
-        "@WarMonitor"         // Open‑source OSINT channel
+        "@Radar_Moscow_99",   // российский радарный фид
+        "@UA_Air_Alarms",     // официальные украинские тревоги
+        "@WarMonitor"         // OSINT‑канал
     ],
     "sound_enabled": true,
     "sound_file": "siren_loud.wav",
@@ -181,81 +181,84 @@ This is the exact setup the author uses for early‑warning of aerial threats.
 }
 ```
 
-Launch as a service (see below) so it survives reboots and runs silently in the background.
+Запуск как службы (см. ниже) обеспечит работу после перезагрузки и Silent‑фон.
 
 ---
 
-## 👨‍💻 Code Walk‑through
+## 👨‍💻 Прогулка по коду
 
-Below are the logical blocks of `main.py` highlighted with short explanations.  
-(Actual colours cannot be shown in plain markdown – imagine each block in a different shade.)
+Ниже выделены логические блоки `main.py` с краткими пояснениями. (Цветовое выделение невозможно в чистом Markdown – представьте каждый блок в своём оттенке.)
 
-### 🔧 1. Configuration Loader (`load_config` / `save_config`)
-- Reads/writes `config.json`.  
-- Provides defaults if file missing.
+### 🔧 1. Загрузка конфигурации (`load_config` / `save_config`)
+- Чтение и запись `config.json`.  
+- При отсутствии файла выводится ошибка и возвращается пустой словарь.
 
-### 🔊 2. Cross‑Platform Sound (`play_sound`)
-- Detects OS (`platform.system()`).  
-- Uses `aplay` on Linux (ideal for Raspberry Pi) or `winsound` on Windows.  
-- Logs warnings if the file is missing.
+### 🔊 2. Кроссплатформенное воспроизведение звука (`play_sound`)
+- Определение ОС через `platform.system()`.  
+- Linux → вызов `aplay -q filename` (идеально для Raspberry Pi).  
+- Windows → `winsound.PlaySound`.  
+- При ошибке пишем предупреждение в лог.
 
-### 📡 3. Telegram Event Handler (`telegram_message_handler`)
-- Fires on **every** new message in any monitored chat.  
-- Checks if the message’s channel username (lowercased, with `@`) is in `config['channels']`.  
-- If match:  
-  - Logs a preview.  
-  - Stores the message in `last_messages` deque (for the web panel).  
-  - Plays the sound (`play_sound`).  
-  - Sends a custom DM to each user in `dm_users` (if set).  
+### 📡 3. Обработчик новых сообщений Telegram (`telegram_message_handler`)
+- Вызывается при любом новом сообщении в любом чате.  
+- Извлекает username чата, приводит к нижнему регистру и проверяет наличие в `config['channels']`.  
+- При совпадении:  
+  - Логирует превью текста (первые 50 символов).  
+  - Сохраняет сообщение в deque `last_messages` (макс. 20 записей) для веб‑панели.  
+  - Воспроизводит звук (`play_sound`).  
+  - Если заданы `dm_users` и `dm_message`, отправляет ЛС каждому пользователю (с указанием того канала, который вызвал тревогу).  
 
-### 🔌 4. Telegram Client Runner (`run_telegram_client`)
-- Creates a `Telethon.TelegramClient` (with optional MTProto proxy).  
-- Registers the handler for `events.NewMessage()`.  
-- Loops forever, reconnecting automatically on failure (with 10 s back‑off).  
+### 🔌 4. Запуск клиента Telegram (`run_telegram_client`)
+- Создаёт `Telethon.TelegramClient` с поддержкой MTProto‑прокси (если включена).  
+- Регистрирует обработчик `events.NewMessage()`.  
+- Запускает клиент и бесконечно ждёт отключения; при ошибке делает паузу 10 секунд и переподключается.
 
-### 🌐 5. Web Control Panel (aiohttp)
-- `GET /` → serves `index.html` (a tiny dashboard).  
-- `GET /api/status` → JSON with connection state, current config, list of available `.wav` files, recent messages.  
-- `POST /api/settings` → updates `config.json` and restarts the Telegram client if proxy changed.  
-- `POST /api/upload` → accepts a `.wav` file upload (max 50 MB) for custom alerts.  
+### 🌐 5. Веб‑панель управления (aiohttp)
+- `GET /` → отдаёт `index.html` (простая панель со статусом и элементами управления).  
+- `GET /api/status` → JSON с:  
+  - `tg_connected` – флаг подключения к Telegram,  
+  - текущая конфигурация,  
+  - список доступных .wav‑файлов в каталоге,  
+  - последние сообщения из `last_messages`.  
+- `POST /api/settings` → принимает новые настройки, обновляет `config.json`, при изменении прокси перезапускает Telegram‑клиент.  
+- `POST /api/upload` → принимает загрузку .wav‑файла (макс. 50 МБ), сохраняет в текущей директории и сообщает об успехе.  
 
-### ▶️ 6. `main()` – Entry Point
-- Boots the aiohttp web server on `0.0.0.0:8080`.  
-- Starts the Telegram listener as a background task (`await run_telegram_client()`).  
-- Keeps the process alive until `Ctrl+C`.
+### ▶️ 6. Функция `main()` – точка входа
+- Поднимает aiohttp‑сервер на `0.0.0.0:8080`.  
+- Запускает фоновую задачу `run_telegram_client()`.  
+- Держит процесс живым до `Ctrl+C`.
 
 ---
 
-## 📈 Resource Consumption Diagram
+## 📈 Диаграмма потребления ресурсов
 
-The following ASCII chart visualises **CPU usage** over a 5‑minute test on a Raspberry Pi 4 (idle + occasional alerts).  
-Values are approximate averages from `top`/`htop`.
+ASCII‑график показывает approximate **CPU‑нагрузку** за 5‑минутный тест на Raspberry Pi 4 (простой простой + occasional alerts).
 
 ```
-CPU (%) 
+CPU (%)
  12 ┤                       ╭─╮      ╭─╮      ╭─╮
  10 ┤               ╭─╮   │ │   │ │   │ │   │ │
   8 ┤       ╭─╮   │ │   │ │   │ │   │ │   │ │   │
   6 ┤   ╭─╮ │ │   │ │   │ │   │ │   │ │   │ │   │
   4 ┤   │ │ │ │   │ │   │ │   │ │   │ │   │ │   │
-  2 ┤───┴─┴─┴─┴───┴─┴───┴─┴───┴─┴───┴─┴───┴─┴───┴─► Time (min)
+  2 ┤───┴─┴─┴─┴───┴─┴───┴─┴───┴─┴───┴─┴───┴─┴───┴─► Время (мин)
       0   1   2   3   4   5
 ```
-*Interpretation*: Baseline ~2‑3 % CPU, spikes to ~10 % only when a Telegram update arrives and sound is played – negligible for any SBC.
+*Интерпретация*: Базовая нагрузка ~2‑3 % CPU, кратковременные всплески до ~10 % только при приходе обновления из Telegram и воспроизведении звука – пренебрежимо мало для любой SBC.
 
-**RAM usage** stays steady at ~18‑22 MB (mostly the Python interpreter + Telethon session).
+**ОЗУ** держится на уровне ~18‑22 МБ (Python‑интерпретатор + Telethon‑сессия).
 
 ---
 
-## 🛠️ Running as a Service
+## 🛠️ Запуск как службы
 
-### systemd (recommended for 24/7 operation)
+### systemd (рекомендовано для круглосуточной работы)
 
-Create `/etc/systemd/system/tg-notifier.service`:
+Создайте файл `/etc/systemd/system/tg-notifier.service`:
 
 ```ini
 [Unit]
-Description=TG-Notifier-alrm – Telegram alert daemon
+Description=TG-Notifier-alrm – демон оповещений из Telegram
 After=network-online.target
 Wants=network-online.target
 
@@ -273,17 +276,17 @@ Environment=PYTHONUNBUFFERED=1
 WantedBy=multi-user.target
 ```
 
-Enable & start:
+Активируем и стартуем:
 
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable tg-notifier.service
 sudo systemctl start tg-notifier.service
-# View logs:
+# Следим за логами в реальном времени:
 sudo journalctl -u tg-notifier -f
 ```
 
-### crontab @reboot (alternative)
+### crontab @reboot (альтернатива)
 
 ```bash
 @reboot cd /home/pi/TG-Notifier-alrm && /home/pi/TG-Notifier-alrm/venv/bin/python3 main.py >> notifier.log 2>&1
@@ -291,29 +294,27 @@ sudo journalctl -u tg-notifier -f
 
 ---
 
-## 🤝 Contributing
+## 🤝 Вклад в проект
 
-We welcome improvements! Please follow these steps:
+Мы приветствуем любые улучшения! Пожалуйста, следуйте этим шагам:
 
-1. Fork the repository.  
-2. Create a feature branch (`git checkout -b feat/awesome-idea`).  
-3. Commit your changes with clear messages.  
-4. Push to your fork and open a Pull Request.  
+1. Форкните репозиторий.  
+2. Создайте ветку для своей функции (`git checkout -b feat/ваша-идея`).  
+3. Внесите изменения и сделайте коммиты с понятными сообщениями.  
+4. Отправьте пуш в свой форк и откройте Pull Request.  
 
-**Please keep**:
-- Code style consistent with the existing file (PEP 8, 4‑space indents).  
-- Any new Python dependencies added to `requirements.txt` (if you create one).  
-- Documentation updated if you change configuration or add new endpoints.
+**Пожалуйста, соблюдайте:**
+- Стиль кода, соответствующий текущему файлу (PEP 8, отступы 4 пробела).  
+- При добавлении новых Python‑зависимостей обновляйте `requirements.txt` (если вы его создадите).  
+- Документацию – обновляйте её, если меняете конфигурацию или добавляете новые эндпоинты.
 
 ---
 
-## 🙏 Acknowledgements
+## 🙏 Благодарности
 
-- **[Telethon]** – awesome async Telegram client for Python.  
-- **[aiohttp]** – lightweight web server/framework used for the control panel.  
-- The open‑source community for providing free `.wav` alert sounds (e.g., freesound.org).  
-- All contributors who reported issues or suggested features.  
+- **[Telethon]** – мощная асинхронная библиотека для работы с Telegram.  
+- **[aiohttp]** – лёгкий веб‑сервер/фреймворк, использованный для панели управления.  
+- Сообщество открытого исходного кода за бесплатные звуки .wav (например, freesound.org).  
+- Все, кто сообщал об ошибках или предлагал новые функции.  
 
----  
-
-*Now you have a complete, ready‑to‑copy `README.md`. Save it as `README.md` in the project root, commit, and share!* 🎉
+--- 
